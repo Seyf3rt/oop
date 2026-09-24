@@ -1,12 +1,71 @@
-# Sonora – Fase 05: modelagem dos relacionamentos
+# Sonora – modelagem: herança (Fase 06) e relacionamentos (Fase 05)
 
-Diagrama: [`diagrama-classes.png`](diagrama-classes.png)
+Diagrama atual: [`diagrama-classes.png`](diagrama-classes.png)
 (fonte editável: [`diagrama-classes.svg`](diagrama-classes.svg), gerado por
-[`gerar_diagrama.py`](gerar_diagrama.py)).
+[`gerar_diagrama.py`](gerar_diagrama.py)). O diagrama da fase anterior, só com as associações,
+ficou guardado em [`diagrama-fase05.png`](diagrama-fase05.png).
 
-Cada associação abaixo traz os quatro adornos pedidos: **papel**, **nome com direção de
+A Fase 06 (enunciado `L08 - Unidade 4`) acrescenta a hierarquia de herança
+`Conteudo` → `Musica`, `Podcast`, descrita logo abaixo. As associações continuam as mesmas da
+Fase 05, mais uma nova: `Plataforma` → `Podcast`.
+
+Cada associação traz os quatro adornos pedidos: **papel**, **nome com direção de
 leitura**, **multiplicidade nas duas pontas** e **navegabilidade**. A justificativa é sempre
-o código da Fase 05 — o diagrama descreve o que as classes de fato guardam.
+o código — o diagrama descreve o que as classes de fato guardam.
+
+---
+
+## Herança: `Conteudo` → `Musica`, `Podcast`
+
+```
+            Conteudo            (superclasse concreta)
+               △
+        ┌──────┴──────┐
+      Musica        Podcast     (subclasses: "é um Conteudo")
+```
+
+**Como está desenhada.** Uma única seta de especialização (linha cheia com triângulo vazado)
+sai das duas subclasses e aponta para `Conteudo`. Herança não leva papel nem multiplicidade:
+ela não liga objetos entre si, diz que toda `Musica` e todo `Podcast` **é um** `Conteudo`.
+
+**O que fica em cada classe.**
+
+| Classe | Atributos | Por quê |
+|---|---|---|
+| `Conteudo` | `contagem` (static), `id`, `titulo`, `duracaoSegundos`, `reproducoes` | É o que todo conteúdo tem, seja música ou podcast |
+| `Musica` | `artista`, `album` | Só o que é específico de música |
+| `Podcast` | `apresentador`, `numeroEpisodio` | Só o que é específico de podcast |
+
+Métodos que valem para qualquer conteúdo também sobem para a superclasse: getters/setters
+de título e duração, `getReproducoes()`, `getDuracaoFormatada()` e `reproduzir()`. As
+subclasses **não** reescrevem `reproduzir()` — herdam pronto.
+
+**Membro `protected` (`#`).** `setId(int)` é `# setId(id: int): void` no diagrama: as
+subclasses podem usar, o resto do sistema não deveria. O `getId()` é público porque a
+`Plataforma` e a `Playlist` buscam por id.
+
+**Um contador só.** `contagem` é `static` em `Conteudo`, então músicas e podcasts dividem a
+mesma sequência de ids (música 1, música 2, podcast 3, ...). Assim um id nunca aponta para
+dois conteúdos diferentes. Como o `super(...)` roda antes das validações da subclasse, um
+podcast recusado por episódio inválido já consumiu um id — por isso podem aparecer saltos.
+
+**Validações.** As comuns (título não nulo/vazio, duração > 0) ficam nos setters de
+`Conteudo`; as específicas ficam na subclasse: artista e álbum não nulos/vazios em `Musica`,
+apresentador não nulo/vazio e `numeroEpisodio >= 1` em `Podcast`. O construtor da subclasse
+chama `super(titulo, duracaoSegundos)` como primeiro comando e depois só os próprios setters.
+
+**Sobrescrita de `toString()`.** `Conteudo.toString()` sobrescreve o de `Object` e devolve a
+parte comum (`[id] titulo (duracaos)`). `Musica` e `Podcast` sobrescrevem de novo, com
+`@Override`, chamando `super.toString()` e acrescentando o que é delas:
+
+```
+[1] Bohemian Rhapsody (355s) - Queen (A Night at the Opera)
+[3] Café com Código (2700s) - Ep. 1, com Ana Souza
+```
+
+**Restrições do enunciado respeitadas.** Herança simples; nada de `abstract`, `final`,
+interfaces, `instanceof` ou cast. A `Plataforma` guarda músicas e podcasts em listas
+separadas (`ArrayList<Musica>` e `ArrayList<Podcast>`), sem nenhuma coleção de `Conteudo`.
 
 > **Regra que vale para todas:** só existe navegação onde existe atributo. Se `A` guarda uma
 > referência para `B` e `B` não guarda nada de `A`, a associação é unidirecional de `A` para
@@ -83,7 +142,7 @@ percorrendo o acervo dela. Então navega-se de `Playlist` para `Usuario`, nunca 
 `Plataforma.excluirUsuario` precisa varrer a lista de playlists para apagar as do usuário
 excluído (`playlists.removeIf(p -> p.getDono() == usuario)`).
 
-## 5. Playlist → Musica (as faixas) — o exemplo do enunciado
+## 5. Playlist → Musica (as faixas) — o exemplo do enunciado da Fase 05
 
 | Adorno | Valor |
 |---|---|
@@ -128,6 +187,20 @@ inconsistência. Guardar um lado só e derivar o outro evita isso.
 `null` lança `IllegalArgumentException`. `deixarDeSeguir` lança `IllegalStateException` quando
 não havia o que desfazer.
 
+## 7. Plataforma → Podcast (Fase 06)
+
+| Adorno | Valor |
+|---|---|
+| Nome | `Plataforma` **cadastra ▶** `Podcast` |
+| Papéis | lado `Podcast`: `- podcasts` |
+| Multiplicidade | `Plataforma` **1** — `Podcast` **0..\*** |
+| Navegabilidade | unidirecional, `Plataforma` → `Podcast` |
+
+Mesma leitura do acervo de músicas: a lista começa vazia e cresce sem limite, e o `Podcast`
+não sabe em que plataforma está. A associação é com `Podcast`, não com `Conteudo`: guardar
+tudo numa `ArrayList<Conteudo>` seria tratar a coleção da superclasse de forma polimórfica,
+que o enunciado deixa para a fase de polimorfismo.
+
 ---
 
 ## Resumo em uma tabela
@@ -140,6 +213,9 @@ não havia o que desfazer.
 | 4 | Usuario–Playlist | `- dono` / `- playlists` | cria ▶ | 1 — 0..* | Playlist → Usuario |
 | 5 | Playlist–Musica | `- faixas` | contém ▶ | 0..* — 0..* | Playlist → Musica |
 | 6 | Usuario–Usuario | `- seguidores` / `- seguindo` | segue ▶ | 0..* — 0..* | seguidores → seguindo |
+| 7 | Plataforma–Podcast | `- podcasts` | cadastra ▶ | 1 — 0..* | Plataforma → Podcast |
+
+E a herança: `Musica` —▷ `Conteudo` e `Podcast` —▷ `Conteudo` (especialização, sem multiplicidade).
 
 ## Como regerar a imagem
 
@@ -147,4 +223,5 @@ não havia o que desfazer.
 python3 docs/gerar_diagrama.py      # escreve docs/diagrama-classes.svg
 ```
 
-O PNG é o mesmo SVG rasterizado (2780×1840). Qualquer navegador abre o `.svg` direto.
+O PNG é o mesmo SVG rasterizado (2780×2746), tirado com o Chromium em modo headless. Qualquer
+navegador abre o `.svg` direto.

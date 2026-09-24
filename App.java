@@ -5,6 +5,29 @@ class App {
         Scanner sc = new Scanner(System.in);
         Plataforma plataforma = new Plataforma();
 
+        System.out.println("=== Sonora: herança de Conteudo ===\n");
+        try {
+            Musica bohemian = new Musica("Bohemian Rhapsody", 355, "Queen", "A Night at the Opera");
+            Musica hotel = new Musica("Hotel California", 391, "Eagles", "Hotel California");
+            Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+
+            plataforma.cadastrarMusica(bohemian);
+            plataforma.cadastrarMusica(hotel);
+            plataforma.cadastrarPodcast(podcast);
+
+            System.out.println("reproduzir() vem de Conteudo e é herdado pelas duas subclasses:");
+            bohemian.reproduzir();
+            hotel.reproduzir();
+            podcast.reproduzir();
+
+            System.out.println("\ntoString() sobrescrito em cada subclasse (reaproveita super.toString()):");
+            System.out.println(bohemian);
+            System.out.println(hotel);
+            System.out.println(podcast);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Não foi possível criar os conteúdos de exemplo: " + e.getMessage());
+        }
+
         boolean fim = false;
 
         do {
@@ -13,7 +36,8 @@ class App {
                     + "1 - Música(s) \n"
                     + "2 - Playlist(s) \n"
                     + "3 - Usuário(s)\n"
-                    + "4 - Sair\n");
+                    + "4 - Podcast(s)\n"
+                    + "5 - Sair\n");
 
             int opcao = lerInt(sc, "Escolha uma opcao: ");
 
@@ -33,10 +57,11 @@ class App {
                         case 1: {
                             String titulo = lerTexto(sc, "Digite o título da música: ");
                             String artista = lerTexto(sc, "Digite o artista: ");
+                            String album = lerTexto(sc, "Digite o álbum: ");
                             int duracao = lerInt(sc, "Digite a duração (segundos): ");
 
                             try {
-                                Musica musica = new Musica(titulo, artista, duracao);
+                                Musica musica = new Musica(titulo, duracao, artista, album);
                                 plataforma.cadastrarMusica(musica);
                                 System.out.println("Musica cadastrada!");
                             } catch (IllegalArgumentException e) {
@@ -78,7 +103,7 @@ class App {
                             if (encontrada == null) {
                                 System.out.println("Nenhuma música encontrada.");
                             } else {
-                                System.out.println(encontrada.informacoes());
+                                System.out.println(encontrada);
                             }
                             break;
                         }
@@ -342,7 +367,71 @@ class App {
                     }
                     break;
                 case 4:
+                    System.out.println(""
+                            + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                            + "[PODCAST(S)]\n"
+                            + "1 - Criar\n"
+                            + "2 - Listar\n"
+                            + "3 - Deletar\n"
+                            + "4 - Buscar\n"
+                            + "5 - Reproduzir\n"
+                            + "6 - Voltar\n");
 
+                    switch (lerInt(sc, "Opcao: ")) {
+                        case 1: {
+                            String titulo = lerTexto(sc, "Digite o título do podcast: ");
+                            String apresentador = lerTexto(sc, "Digite o apresentador: ");
+                            int duracao = lerInt(sc, "Digite a duração (segundos): ");
+                            int numeroEpisodio = lerInt(sc, "Digite o número do episódio: ");
+
+                            try {
+                                Podcast podcast = new Podcast(titulo, duracao, apresentador, numeroEpisodio);
+                                plataforma.cadastrarPodcast(podcast);
+                                System.out.println("Podcast cadastrado!");
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("Nao foi possivel cadastrar: " + e.getMessage());
+                            }
+                            break;
+                        }
+                        case 2:
+                            System.out.println(plataforma.getTodosPodcasts());
+                            break;
+                        case 3: {
+                            System.out.println(plataforma.getTodosPodcasts());
+                            int id = lerInt(sc, "\nDigite o id do podcast a deletar: ");
+                            if (plataforma.excluirPodcast(id)) {
+                                System.out.println("Podcast excluido.");
+                            } else {
+                                System.out.println("Podcast nao encontrado.");
+                            }
+                            break;
+                        }
+                        case 4: {
+                            Podcast encontrado = plataforma.buscarPodcast(lerInt(sc, "Digite o id: "));
+                            if (encontrado == null) {
+                                System.out.println("Nenhum podcast encontrado.");
+                            } else {
+                                System.out.println(encontrado);
+                            }
+                            break;
+                        }
+                        case 5: {
+                            Podcast podcast = plataforma.buscarPodcast(lerInt(sc, "Digite o id: "));
+                            if (podcast == null) {
+                                System.out.println("Esse podcast não existe.");
+                            } else {
+                                podcast.reproduzir();
+                            }
+                            break;
+                        }
+                        case 6:
+                            continue;
+                        default:
+                            System.out.println("Valor incorreto!");
+                            break;
+                    }
+                    break;
+                case 5:
                     fim = true;
                     break;
                 default:

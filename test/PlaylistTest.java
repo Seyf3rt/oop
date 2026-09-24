@@ -34,9 +34,9 @@ public class PlaylistTest {
         dono = new Usuario("Lucas", "lucas@sonora.com");
         playlist = new Playlist("Clássicos do Rock", dono);
 
-        bohemian = new Musica("Bohemian Rhapsody", "Queen", 355);
-        hotel = new Musica("Hotel California", "Eagles", 391);
-        stairway = new Musica("Stairway to Heaven", "Led Zeppelin", 482);
+        bohemian = new Musica("Bohemian Rhapsody", 355, "Queen", "A Night at the Opera");
+        hotel = new Musica("Hotel California", 391, "Eagles", "Hotel California");
+        stairway = new Musica("Stairway to Heaven", 482, "Led Zeppelin", "Led Zeppelin IV");
     }
 
     /** Deixa a playlist com [bohemian, hotel, stairway], nessa ordem. */

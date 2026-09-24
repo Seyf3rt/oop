@@ -94,7 +94,7 @@ class Playlist {
         }
         String todasMusicas = "";
         for (Musica musica : musicas) {
-            todasMusicas += musica.informacoes();
+            todasMusicas += "\n" + musica;
         }
         return todasMusicas;
     }

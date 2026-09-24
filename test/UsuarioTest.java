@@ -94,7 +94,7 @@ public class UsuarioTest {
     @DisplayName("Criar uma música entre dois usuários não interfere nos ids de Usuário")
     public void pl08Caso6_musicaNoMeioNaoInterfereNosIdsDeUsuario() {
         Usuario antes = new Usuario("Ana", "ana@sonora.com");
-        Musica musica = new Musica("Bohemian Rhapsody", "Queen", 355);
+        Musica musica = new Musica("Bohemian Rhapsody", 355, "Queen", "A Night at the Opera");
         Usuario depois = new Usuario("Bruno", "bruno@sonora.com");
 
         assertNotNull(musica);

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
  *   PL06 - Validar Plataforma.buscarMusica(titulo) e buscarMusica(id)
  *   PL11 - Validar Plataforma.cadastrarMusica e cadastrarUsuario
  *   PL13 - Acervo em ArrayList e a associação reflexiva pela Plataforma
+ *   PL17 - Podcasts na Plataforma
  *
  * Observação: depois da Fase 05 a Plataforma guarda tudo em ArrayList e localiza os
  * objetos pelo id, não mais pela posição num array dimensionado pelos contadores
@@ -31,10 +32,10 @@ public class PlataformaTest {
     public void montarCenario() {
         plataforma = new Plataforma();
 
-        bohemian = new Musica("Bohemian Rhapsody", "Queen", 355);
+        bohemian = new Musica("Bohemian Rhapsody", 355, "Queen", "A Night at the Opera");
         plataforma.cadastrarMusica(bohemian);
 
-        hotel = new Musica("Hotel California", "Eagles", 391);
+        hotel = new Musica("Hotel California", 391, "Eagles", "Hotel California");
         plataforma.cadastrarMusica(hotel);
 
         lucas = new Usuario("Lucas", "lucas@sonora.com");
@@ -68,9 +69,9 @@ public class PlataformaTest {
     @Test
     @DisplayName("Buscar por id inexistente devolve null")
     public void pl06Caso4_buscarPorIdInexistenteDevolveNull() {
-        // Os ids são sequenciais a partir de 1 e o contador nunca diminui nos testes,
-        // então "contagem + 1" é um id que ainda não foi dado a música nenhuma.
-        int idInexistente = Musica.getContagem() + 1;
+        // Os ids de conteúdo são sequenciais a partir de 1 e o contador nunca diminui
+        // nos testes, então "contagem + 1" é um id que ainda não foi dado a ninguém.
+        int idInexistente = Conteudo.getContagem() + 1;
 
         assertNull(plataforma.buscarMusica(idInexistente));
     }
@@ -94,7 +95,7 @@ public class PlataformaTest {
     @Test
     @DisplayName("Música válida é cadastrada (retorna true) e passa a ser encontrada")
     public void pl11Caso2_musicaValidaECadastradaEPassaASerEncontrada() {
-        Musica stairway = new Musica("Stairway to Heaven", "Led Zeppelin", 482);
+        Musica stairway = new Musica("Stairway to Heaven", 482, "Led Zeppelin", "Led Zeppelin IV");
 
         assertTrue(plataforma.cadastrarMusica(stairway));
         assertEquals(stairway, plataforma.buscarMusica(stairway.getId()));
@@ -124,7 +125,7 @@ public class PlataformaTest {
     public void pl13Caso1_totalDeMusicasContaSoOAcervoDaPlataforma() {
         assertEquals(2, plataforma.getTotalMusicas());
 
-        plataforma.cadastrarMusica(new Musica("Stairway to Heaven", "Led Zeppelin", 482));
+        plataforma.cadastrarMusica(new Musica("Stairway to Heaven", 482, "Led Zeppelin", "Led Zeppelin IV"));
 
         assertEquals(3, plataforma.getTotalMusicas());
     }
@@ -142,8 +143,8 @@ public class PlataformaTest {
     @Test
     @DisplayName("Músicas criadas antes do cadastro não se sobrescrevem")
     public void pl13Caso3_musicasCriadasAntesDoCadastroNaoSeSobrescrevem() {
-        Musica primeira = new Musica("Come Together", "The Beatles", 259);
-        Musica segunda = new Musica("Let It Be", "The Beatles", 243);
+        Musica primeira = new Musica("Come Together", 259, "The Beatles", "Abbey Road");
+        Musica segunda = new Musica("Let It Be", 243, "The Beatles", "Let It Be");
 
         assertTrue(plataforma.cadastrarMusica(primeira));
         assertTrue(plataforma.cadastrarMusica(segunda));
@@ -162,14 +163,14 @@ public class PlataformaTest {
     @Test
     @DisplayName("Excluir música tira do acervo sem mexer nos ids das próximas")
     public void pl13Caso5_excluirMusicaNaoMexeNosIdsDasProximas() {
-        int idAntes = Musica.getContagem();
+        int idAntes = Conteudo.getContagem();
 
         assertTrue(plataforma.excluirMusica(hotel.getId()));
 
         assertNull(plataforma.buscarMusica(hotel.getId()));
         assertEquals(1, plataforma.getTotalMusicas());
 
-        Musica nova = new Musica("Let It Be", "The Beatles", 243);
+        Musica nova = new Musica("Let It Be", 243, "The Beatles", "Let It Be");
         assertEquals(idAntes + 1, nova.getId());
     }
 
@@ -263,5 +264,64 @@ public class PlataformaTest {
 
         assertFalse(plataforma.excluirMusicaPlaylist(playlist.getId(), bohemian.getId()));
         assertEquals(1, playlist.getQuantidade());
+    }
+
+    // ------------------------------------------------------------------
+    // PL17 - Podcasts na Plataforma
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Podcast nulo não é cadastrado (retorna false)")
+    public void pl17Caso1_podcastNuloNaoECadastrado() {
+        assertFalse(plataforma.cadastrarPodcast(null));
+    }
+
+    @Test
+    @DisplayName("Podcast válido é cadastrado e passa a ser encontrado pelo id")
+    public void pl17Caso2_podcastValidoECadastradoEEncontrado() {
+        Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+
+        assertTrue(plataforma.cadastrarPodcast(podcast));
+        assertEquals(podcast, plataforma.buscarPodcast(podcast.getId()));
+    }
+
+    @Test
+    @DisplayName("O mesmo podcast não é cadastrado duas vezes")
+    public void pl17Caso3_mesmoPodcastNaoECadastradoDuasVezes() {
+        Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+        plataforma.cadastrarPodcast(podcast);
+
+        assertFalse(plataforma.cadastrarPodcast(podcast));
+    }
+
+    @Test
+    @DisplayName("Excluir podcast tira da plataforma; excluir de novo devolve false")
+    public void pl17Caso4_excluirPodcastTiraDaPlataforma() {
+        Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+        plataforma.cadastrarPodcast(podcast);
+
+        assertTrue(plataforma.excluirPodcast(podcast.getId()));
+        assertNull(plataforma.buscarPodcast(podcast.getId()));
+        assertFalse(plataforma.excluirPodcast(podcast.getId()));
+    }
+
+    @Test
+    @DisplayName("Podcasts e músicas ficam em listas separadas")
+    public void pl17Caso5_podcastsEMusicasFicamEmListasSeparadas() {
+        Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+        plataforma.cadastrarPodcast(podcast);
+
+        assertNull(plataforma.buscarMusica(podcast.getId()));
+        assertNull(plataforma.buscarPodcast(bohemian.getId()));
+        assertEquals(2, plataforma.getTotalMusicas());
+    }
+
+    @Test
+    @DisplayName("A listagem de podcasts usa o toString do Podcast")
+    public void pl17Caso6_listagemDePodcastsUsaOToString() {
+        Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
+        plataforma.cadastrarPodcast(podcast);
+
+        assertTrue(plataforma.getTodosPodcasts().contains(podcast.toString()));
     }
 }

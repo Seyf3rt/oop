@@ -5,6 +5,7 @@ class Plataforma {
     // pelos contadores static das outras classes; agora são listas que crescem sozinhas
     // e a busca é sempre pelo id do objeto, nunca pela posição.
     private ArrayList<Musica> musicas = new ArrayList<>();
+    private ArrayList<Podcast> podcasts = new ArrayList<>();
     private ArrayList<Usuario> usuarios = new ArrayList<>();
     private ArrayList<Playlist> playlists = new ArrayList<>();
 
@@ -29,7 +30,7 @@ class Plataforma {
         }
         String todasMusicas = "";
         for (Musica musica : musicas) {
-            todasMusicas += musica.informacoes();
+            todasMusicas += "\n" + musica;
         }
         return todasMusicas;
     }
@@ -62,6 +63,45 @@ class Plataforma {
             return false;
         }
         return musicas.remove(musica);
+    }
+
+    // ------------------------------------------------------------------
+    // Podcasts
+    // ------------------------------------------------------------------
+
+    public boolean cadastrarPodcast(Podcast podcast) {
+        if (podcast == null || podcasts.contains(podcast)) {
+            return false;
+        }
+        return podcasts.add(podcast);
+    }
+
+    public String getTodosPodcasts() {
+        if (podcasts.isEmpty()) {
+            return "Não há podcasts cadastrados.";
+        }
+        String todosPodcasts = "";
+        for (Podcast podcast : podcasts) {
+            todosPodcasts += "\n" + podcast;
+        }
+        return todosPodcasts;
+    }
+
+    public Podcast buscarPodcast(int id) {
+        for (Podcast podcast : podcasts) {
+            if (podcast.getId() == id) {
+                return podcast;
+            }
+        }
+        return null;
+    }
+
+    public boolean excluirPodcast(int idPodcast) {
+        Podcast podcast = buscarPodcast(idPodcast);
+        if (podcast == null) {
+            return false;
+        }
+        return podcasts.remove(podcast);
     }
 
     // ------------------------------------------------------------------

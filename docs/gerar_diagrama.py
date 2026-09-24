@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Gera docs/diagrama-classes.svg: classes do Sonora + as associações com os
-quatro adornos (papel, nome com direção, multiplicidade e navegabilidade)."""
+"""Gera docs/diagrama-classes.svg: classes do Sonora, a hierarquia de herança
+(Conteudo -> Musica, Podcast) e as associações com os quatro adornos (papel,
+nome com direção, multiplicidade e navegabilidade)."""
 
 LINHA = 30
 CAB = 60
@@ -42,7 +43,7 @@ class Caixa:
                 dec = ' text-decoration="underline"' if estatico else ''
                 saida.append(
                     f'<text x="{self.x + 22}" y="{topo + PAD + LINHA * i + 21}" font-size="{FS}" '
-                    f'font-family="DejaVu Sans, Arial, sans-serif"{dec}>{esc(texto)}</text>')
+                    f'font-family="DejaVu Sans, Arial, sans-serif" xml:space="preserve"{dec}>{esc(texto)}</text>')
             return saida
 
         p += bloco(self.atributos, y1)
@@ -50,28 +51,63 @@ class Caixa:
         return '\n'.join(p)
 
 
-musica = Caixa('Musica', 1040, 200, 500, [
+# ------------------------------------------------------------------
+# Hierarquia: Conteudo (superclasse) -> Musica e Podcast (subclasses)
+# ------------------------------------------------------------------
+
+musica = Caixa('Musica', 1040, 1000, 580, [
+    '- artista: String',
+    '- album: String',
+], [
+    '+ Musica(titulo: String, duracaoSegundos: int,',
+    '             artista: String, album: String)',
+    '+ getArtista(): String',
+    '+ setArtista(artista: String): void',
+    '+ getAlbum(): String',
+    '+ setAlbum(album: String): void',
+    '+ toString(): String',
+])
+
+podcast = Caixa('Podcast', 1780, 1000, 640, [
+    '- apresentador: String',
+    '- numeroEpisodio: int',
+], [
+    '+ Podcast(titulo: String, duracaoSegundos: int,',
+    '             apresentador: String, numeroEpisodio: int)',
+    '+ getApresentador(): String',
+    '+ setApresentador(apresentador: String): void',
+    '+ getNumeroEpisodio(): int',
+    '+ setNumeroEpisodio(numeroEpisodio: int): void',
+    '+ toString(): String',
+])
+
+CONTEUDO_W = 680
+conteudo = Caixa('Conteudo', (musica.cx + podcast.cx) / 2 - CONTEUDO_W / 2, 220, CONTEUDO_W, [
     ('- contagem: int', True),
     '- id: int',
     '- titulo: String',
-    '- artista: String',
     '- duracaoSegundos: int',
     '- reproducoes: int',
 ], [
-    '+ Musica(titulo: String, artista: String,',
-    '             duracaoSegundos: int)',
+    '+ Conteudo(titulo: String, duracaoSegundos: int)',
     '+ getId(): int',
+    '# setId(id: int): void',
     '+ getTitulo(): String',
-    '+ getArtista(): String',
+    '+ setTitulo(titulo: String): void',
     '+ getDuracaoSegundos(): int',
+    '+ setDuracaoSegundos(duracaoSegundos: int): void',
     '+ getReproducoes(): int',
-    '+ reproduzir(): void',
     '+ getDuracaoFormatada(): String',
-    '+ informacoes(): String',
+    '+ reproduzir(): void',
+    '+ toString(): String',
     ('+ getContagem(): int', True),
 ])
 
-playlist = Caixa('Playlist', 1040, 990, 560, [
+# ------------------------------------------------------------------
+# Demais classes (associações da fase anterior)
+# ------------------------------------------------------------------
+
+playlist = Caixa('Playlist', 1040, 1560, 560, [
     ('- contagem: int', True),
     '- id: int',
     '- titulo: String',
@@ -95,7 +131,7 @@ playlist = Caixa('Playlist', 1040, 990, 560, [
     ('+ getContagem(): int', True),
 ])
 
-usuario = Caixa('Usuario', 1820, 570, 600, [
+usuario = Caixa('Usuario', 1840, 1560, 600, [
     ('- contagem: int', True),
     '- id: int',
     '- nome: String',
@@ -115,8 +151,9 @@ usuario = Caixa('Usuario', 1820, 570, 600, [
     ('+ getContagem(): int', True),
 ])
 
-plataforma = Caixa('Plataforma', 60, 200, 740, [
+plataforma = Caixa('Plataforma', 60, 220, 740, [
     '- musicas: ArrayList<Musica>',
+    '- podcasts: ArrayList<Podcast>',
     '- usuarios: ArrayList<Usuario>',
     '- playlists: ArrayList<Playlist>',
 ], [
@@ -126,6 +163,10 @@ plataforma = Caixa('Plataforma', 60, 200, 740, [
     '+ buscarMusica(id: int): Musica',
     '+ buscarMusica(titulo: String): Musica',
     '+ excluirMusica(idMusica: int): boolean',
+    '+ cadastrarPodcast(podcast: Podcast): boolean',
+    '+ getTodosPodcasts(): String',
+    '+ buscarPodcast(id: int): Podcast',
+    '+ excluirPodcast(idPodcast: int): boolean',
     '+ cadastrarUsuario(usuario: Usuario): boolean',
     '+ getTotalUsuarios(): int',
     '+ buscarUsuario(id: int): Usuario',
@@ -151,7 +192,7 @@ plataforma = Caixa('Plataforma', 60, 200, 740, [
     '- exigirPlaylist(id: int): Playlist',
 ])
 
-caixas = [plataforma, musica, playlist, usuario]
+caixas = [plataforma, conteudo, musica, podcast, playlist, usuario]
 
 partes = []
 
@@ -175,6 +216,15 @@ def seta(ponta, direcao, cor='#111111'):
     partes.append(f'<polyline points="{d}" fill="none" stroke="{cor}" stroke-width="3" '
                   f'stroke-linecap="round" stroke-linejoin="round"/>')
 
+def triangulo_heranca(ponta):
+    """Triângulo VAZADO da UML: especialização, com a ponta na superclasse."""
+    x, y = ponta
+    alt, meia = 30, 18
+    d = f'{x},{y} {x - meia},{y + alt} {x + meia},{y + alt}'
+    partes.append(f'<polygon points="{d}" fill="#ffffff" stroke="#111111" stroke-width="3" '
+                  f'stroke-linejoin="round"/>')
+    return y + alt
+
 def texto(x, y, t, anchor='middle', tam=19, peso='normal', estilo='normal', cor='#111111'):
     partes.append(f'<text x="{x}" y="{y}" text-anchor="{anchor}" font-size="{tam}" '
                   f'font-weight="{peso}" font-style="{estilo}" fill="{cor}" '
@@ -184,38 +234,59 @@ def nome_assoc(x, y, t, anchor='middle'):
     texto(x, y, t, anchor=anchor, tam=21, estilo='italic')
 
 # ------------------------------------------------------------------
+# Herança: Musica e Podcast especializam Conteudo
+#   uma única ponta de triângulo na superclasse, e a árvore desce até
+#   cada subclasse ("Musica é um Conteudo", "Podcast é um Conteudo")
+# ------------------------------------------------------------------
+BARRA = 945
+base = triangulo_heranca((conteudo.cx, conteudo.baixo))
+linha([(conteudo.cx, base), (conteudo.cx, BARRA)])
+linha([(musica.cx, musica.y), (musica.cx, BARRA), (podcast.cx, BARRA), (podcast.cx, podcast.y)])
+texto(conteudo.cx + 16, BARRA - 18, 'é um(a)', anchor='start', tam=20, estilo='italic')
+
+# ------------------------------------------------------------------
 # 1. Plataforma cadastra ▶ Musica   (1 para 0..*, unidirecional)
 # ------------------------------------------------------------------
-linha([(plataforma.dir, 440), (musica.x, 440)])
-seta((musica.x, 440), 'direita')
-nome_assoc((plataforma.dir + musica.x) / 2, 420, 'cadastra ▶')
-texto(plataforma.dir + 14, 480, '1', anchor='start')
-texto(musica.x - 14, 480, '0..*', anchor='end')
-texto(musica.x - 14, 506, '- acervo', anchor='end')
+linha([(plataforma.dir, 1200), (musica.x, 1200)])
+seta((musica.x, 1200), 'direita')
+nome_assoc((plataforma.dir + musica.x) / 2, 1180, 'cadastra ▶')
+texto(plataforma.dir + 14, 1240, '1', anchor='start')
+texto(musica.x - 14, 1240, '0..*', anchor='end')
+texto(musica.x - 14, 1266, '- acervo', anchor='end')
 
 # ------------------------------------------------------------------
-# 2. Plataforma registra ▶ Usuario  (1 para 0..*, unidirecional)
-#    contorna por baixo, pra não cruzar as outras caixas
+# 2. Plataforma cadastra ▶ Podcast  (1 para 0..*, unidirecional)
+#    sai pelo topo da Plataforma e contorna a Conteudo por cima
 # ------------------------------------------------------------------
-linha([(700, plataforma.y), (700, 110), (2680, 110), (2680, 1040), (usuario.dir, 1040)])
-seta((usuario.dir, 1040), 'esquerda')
-nome_assoc(1690, 92, 'registra ▶')
-texto(676, plataforma.y - 16, '1', anchor='end')
-texto(usuario.dir + 18, 1020, '0..*', anchor='start')
-texto(usuario.dir + 18, 994, '- usuarios', anchor='start')
+linha([(740, plataforma.y), (740, 170), (2570, 170), (2570, 1200), (podcast.dir, 1200)])
+seta((podcast.dir, 1200), 'esquerda')
+nome_assoc(1655, 156, 'cadastra ▶')
+texto(756, plataforma.y - 12, '1', anchor='start')
+texto(podcast.dir + 16, 1180, '0..*', anchor='start')
+texto(podcast.dir + 16, 1154, '- podcasts', anchor='start')
 
 # ------------------------------------------------------------------
-# 3. Plataforma hospeda ▶ Playlist  (1 para 0..*, unidirecional)
+# 3. Plataforma registra ▶ Usuario  (1 para 0..*, unidirecional)
 # ------------------------------------------------------------------
-linha([(plataforma.dir, 1150), (playlist.x, 1150)])
-seta((playlist.x, 1150), 'direita')
-nome_assoc((plataforma.dir + playlist.x) / 2, 1130, 'hospeda ▶')
-texto(plataforma.dir + 14, 1190, '1', anchor='start')
-texto(playlist.x - 14, 1190, '0..*', anchor='end')
-texto(playlist.x - 14, 1216, '- playlists', anchor='end')
+linha([(640, plataforma.y), (640, 120), (2690, 120), (2690, 2000), (usuario.dir, 2000)])
+seta((usuario.dir, 2000), 'esquerda')
+nome_assoc(1665, 106, 'registra ▶')
+texto(624, plataforma.y - 12, '1', anchor='end')
+texto(usuario.dir + 18, 1980, '0..*', anchor='start')
+texto(usuario.dir + 18, 1954, '- usuarios', anchor='start')
 
 # ------------------------------------------------------------------
-# 4. Playlist contém ▶ Musica  (0..* para 0..*, unidirecional)
+# 4. Plataforma hospeda ▶ Playlist  (1 para 0..*, unidirecional)
+# ------------------------------------------------------------------
+linha([(430, plataforma.baixo), (430, 1800), (playlist.x, 1800)])
+seta((playlist.x, 1800), 'direita')
+nome_assoc(735, 1780, 'hospeda ▶')
+texto(446, plataforma.baixo + 30, '1', anchor='start')
+texto(playlist.x - 14, 1840, '0..*', anchor='end')
+texto(playlist.x - 14, 1866, '- playlists', anchor='end')
+
+# ------------------------------------------------------------------
+# 5. Playlist contém ▶ Musica  (0..* para 0..*, unidirecional)
 # ------------------------------------------------------------------
 linha([(1260, playlist.y), (1260, musica.baixo)])
 seta((1260, musica.baixo), 'cima')
@@ -225,60 +296,65 @@ texto(1240, musica.baixo + 34, '0..*', anchor='end')
 texto(1240, musica.baixo + 60, '- faixas', anchor='end')
 
 # ------------------------------------------------------------------
-# 5. Usuario cria ▶ Playlist  (1 dono para 0..* playlists, unidirecional
+# 6. Usuario cria ▶ Playlist  (1 dono para 0..* playlists, unidirecional
 #    Playlist -> Usuario: só a Playlist guarda o dono)
 # ------------------------------------------------------------------
-linha([(playlist.dir, 1100), (usuario.x, 1100)])
-seta((usuario.x, 1100), 'direita')
-nome_assoc((playlist.dir + usuario.x) / 2, 1080, '◀ cria')
-texto(playlist.dir + 14, 1140, '0..*', anchor='start')
-texto(playlist.dir + 14, 1166, '- playlists', anchor='start')
-texto(usuario.x - 14, 1140, '1', anchor='end')
-texto(usuario.x - 14, 1166, '- dono', anchor='end')
+linha([(playlist.dir, 1900), (usuario.x, 1900)])
+seta((usuario.x, 1900), 'direita')
+nome_assoc((playlist.dir + usuario.x) / 2, 1880, '◀ cria')
+texto(playlist.dir + 14, 1940, '0..*', anchor='start')
+texto(playlist.dir + 14, 1966, '- playlists', anchor='start')
+texto(usuario.x - 14, 1940, '1', anchor='end')
+texto(usuario.x - 14, 1966, '- dono', anchor='end')
 
 # ------------------------------------------------------------------
-# 6. Usuario segue ▶ Usuario  (reflexiva, 0..* dos dois lados)
+# 7. Usuario segue ▶ Usuario  (reflexiva, 0..* dos dois lados)
 # ------------------------------------------------------------------
-linha([(1930, usuario.y), (1930, 420), (2330, 420), (2330, usuario.y)])
+linha([(1950, usuario.y), (1950, 1490), (2330, 1490), (2330, usuario.y)])
 seta((2330, usuario.y), 'baixo')
-nome_assoc(2130, 402, 'segue ▶')
-texto(1914, usuario.y - 18, '0..*', anchor='end')
-texto(1914, usuario.y - 44, '- seguidores', anchor='end')
+nome_assoc(2140, 1474, 'segue ▶')
+texto(1934, usuario.y - 18, '0..*', anchor='end')
+texto(1934, usuario.y - 44, '- seguidores', anchor='end')
 texto(2346, usuario.y - 18, '0..*', anchor='start')
 texto(2346, usuario.y - 44, '- seguindo', anchor='start')
 
 # ------------------------------------------------------------------
-# Legenda
+# Quadros de texto
 # ------------------------------------------------------------------
-LX, LY, LW, LH = 1700, 1380, 900, 400
-partes.append(f'<rect x="{LX}" y="{LY}" width="{LW}" height="{LH}" fill="#f6f6f6" '
-              f'stroke="#111111" stroke-width="3"/>')
-texto(LX + 24, LY + 44, 'Como ler os adornos', anchor='start', tam=24, peso='bold')
-legenda = [
-    '- papel       nome do lado da associação (ex.: - faixas)',
-    'nome ▶        verbo e direção de leitura (ex.: Plataforma cadastra ▶ Musica)',
-    '0..* / 1       multiplicidade em cada ponta',
-    '——▶           navegabilidade: a seta aberta marca o único lado navegável;',
-    '                      sem seta nenhuma, a associação seria bidirecional',
+def quadro(x, y, w, titulo, linhas, coluna=0):
+    """Cada linha é um texto ou um par (símbolo, descrição) alinhado em duas colunas."""
+    h = 86 + 30 * len(linhas) + 10
+    partes.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#f6f6f6" '
+                  f'stroke="#111111" stroke-width="3"/>')
+    texto(x + 24, y + 44, titulo, anchor='start', tam=24, peso='bold')
+    for i, l in enumerate(linhas):
+        ly = y + 86 + i * 30
+        if isinstance(l, tuple):
+            texto(x + 24, ly, l[0], anchor='start', tam=18)
+            texto(x + 24 + coluna, ly, l[1], anchor='start', tam=18)
+        else:
+            texto(x + 24, ly, l, anchor='start', tam=18)
+    return y + h
+
+fim_legenda = quadro(1660, 2250, 1060, 'Como ler o diagrama', [
+    ('- papel', 'nome do lado da associação (ex.: - faixas)'),
+    ('nome ▶', 'verbo e direção de leitura (ex.: Plataforma cadastra ▶ Musica)'),
+    ('0..* / 1', 'multiplicidade em cada ponta'),
+    ('——>', 'navegabilidade: a seta aberta marca o único lado navegável'),
+    ('——▷', 'especialização (herança): o triângulo vazado fica na superclasse'),
+    ('#', 'protected: visível na própria classe e nas subclasses (# setId)'),
+    ('sublinhado', 'membro static (contagem: um contador só para todo Conteudo)'),
     '',
-    'Todas as associações do Sonora são unidirecionais: só o lado de onde a seta',
-    'sai guarda a referência para o outro. Musica, por exemplo, não sabe em que',
-    'playlists está, e Usuario não conhece a Plataforma que o registrou.',
-]
-for i, l in enumerate(legenda):
-    texto(LX + 24, LY + 86 + i * 30, l, anchor='start', tam=18)
+    'id, titulo, duracaoSegundos e reproducoes ficam só em Conteudo; cada subclasse',
+    'guarda apenas o que é dela. reproduzir() existe só em Conteudo e é herdado;',
+    'toString() aparece nas três porque Musica e Podcast o sobrescrevem (@Override)',
+    'reaproveitando super.toString().',
+], coluna=130)
 
-texto(60, 96, 'Sonora · Fase 05 — diagrama de classes', anchor='start', tam=30, peso='bold')
-texto(60, 130, 'papel · nome com direção · multiplicidade · navegabilidade',
-      anchor='start', tam=18, estilo='italic')
-
-JX, JY, JW, JH = 60, 1380, 880, 400
-partes.append(f'<rect x="{JX}" y="{JY}" width="{JW}" height="{JH}" fill="#f6f6f6" '
-              f'stroke="#111111" stroke-width="3"/>')
-texto(JX + 24, JY + 44, 'Por que estas multiplicidades', anchor='start', tam=24, peso='bold')
-justificativas = [
+fim_justificativas = quadro(60, 1940, 920, 'Por que estas multiplicidades', [
     'cadastra: a plataforma é uma só (1) e o acervo pode estar vazio',
-    'ou ter quantas músicas forem cadastradas (0..*).',
+    'ou ter quantas músicas forem cadastradas (0..*). Os podcasts',
+    'têm a mesma leitura, numa lista própria (- podcasts).',
     'registra / hospeda: mesma leitura, para usuários e playlists.',
     'contém: uma playlist pode estar vazia e a mesma música pode',
     'aparecer em várias playlists, então 0..* nas duas pontas.',
@@ -286,19 +362,23 @@ justificativas = [
     'dono nulo) e um usuário pode ter 0..* playlists.',
     'segue: quem entra na plataforma não segue ninguém, e não há',
     'teto para quantos segue ou por quantos é seguido (0..* / 0..*).',
-]
-for i, l in enumerate(justificativas):
-    texto(JX + 24, JY + 86 + i * 30, l, anchor='start', tam=18)
+    'Herança não leva multiplicidade: não liga objetos, diz que',
+    'toda Musica e todo Podcast é um Conteudo.',
+])
 
-W, H = 2780, 1840
+texto(60, 58, 'Sonora · Fase 06 — diagrama de classes com herança', anchor='start', tam=30, peso='bold')
+texto(60, 90, 'especialização · # protected · papel · nome com direção · multiplicidade · navegabilidade',
+      anchor='start', tam=18, estilo='italic')
+
+W = 2780
+H = max(fim_legenda, fim_justificativas) + 40
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
-       f'<rect width="{W}" height="{H}" fill="#ffffff"/>',
-       '<text x="60" y="1830" font-size="1" fill="#ffffff">.</text>']
+       f'<rect width="{W}" height="{H}" fill="#ffffff"/>']
 svg += partes
 svg += [c.svg() for c in caixas]
 svg.append('</svg>')
 
 open('docs/diagrama-classes.svg', 'w', encoding='utf-8').write('\n'.join(svg))
-print('svg gerado')
+print(f'svg gerado ({W}x{H})')
 for c in caixas:
     print(f'{c.nome}: x={c.x} y={c.y} w={c.w} h={c.h} baixo={c.baixo} dir={c.dir}')

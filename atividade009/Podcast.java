@@ -11,7 +11,7 @@ class Podcast extends Conteudo {
 
     @Override 
     public String getCredito(){
-        return apresentador;
+        return numeroEpisodio+" "+apresentador;
     }
 
     public String getApresentador() {

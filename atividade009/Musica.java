@@ -11,7 +11,7 @@ class Musica extends Conteudo {
 
     @Override 
     public String getCredito(){
-        return artista;
+        return artista+" "+album;
     }
 
     public String getArtista() {

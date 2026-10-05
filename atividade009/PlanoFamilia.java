@@ -1,4 +1,5 @@
 public class PlanoFamilia extends PlanoPago {
+
     private int quantidadeMembros;
 
     public PlanoFamilia(double precoMensal, int quantidadeMembros) {
@@ -8,8 +9,9 @@ public class PlanoFamilia extends PlanoPago {
         setQuantidadeMembros(quantidadeMembros);
     }
 
-    public int getQuantidadeMembros() {
-        return quantidadeMembros;
+    @Override
+    public double calcularMensalidade() {
+        return getPrecoMensal() + 4.90 * (quantidadeMembros - 1);
     }
 
     public void setQuantidadeMembros(int quantidadeMembros) {
@@ -19,9 +21,8 @@ public class PlanoFamilia extends PlanoPago {
         this.quantidadeMembros = quantidadeMembros;
     }
 
-    @Override
-    public double calcularMensalidade() {
-        return getPrecoMensal() + 4.90 * (quantidadeMembros - 1);
+    public int getQuantidadeMembros() {
+        return quantidadeMembros;
     }
 
 }

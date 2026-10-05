@@ -5,29 +5,6 @@ class App {
         Scanner sc = new Scanner(System.in);
         Plataforma plataforma = new Plataforma();
 
-        System.out.println("=== Sonora: herança de Conteudo ===\n");
-        try {
-            Musica bohemian = new Musica("Bohemian Rhapsody", 355, "Queen", "A Night at the Opera");
-            Musica hotel = new Musica("Hotel California", 391, "Eagles", "Hotel California");
-            Podcast podcast = new Podcast("Café com Código", 2700, "Ana Souza", 1);
-
-            plataforma.cadastrarMusica(bohemian);
-            plataforma.cadastrarMusica(hotel);
-            plataforma.cadastrarPodcast(podcast);
-
-            System.out.println("reproduzir() vem de Conteudo e é herdado pelas duas subclasses:");
-            bohemian.reproduzir();
-            hotel.reproduzir();
-            podcast.reproduzir();
-
-            System.out.println("\ntoString() sobrescrito em cada subclasse (reaproveita super.toString()):");
-            System.out.println(bohemian);
-            System.out.println(hotel);
-            System.out.println(podcast);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Não foi possível criar os conteúdos de exemplo: " + e.getMessage());
-        }
-
         boolean fim = false;
 
         do {
@@ -264,15 +241,17 @@ class App {
                     System.out.println(""
                             + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                             + "[USUÁRIO(S)]\n"
-                            + "1 - Criar\n"
-                            + "2 - Listar\n"
-                            + "3 - Deletar\n"
-                            + "4 - Buscar\n"
-                            + "5 - Seguir usuário\n"
-                            + "6 - Deixar de seguir usuário\n"
-                            + "7 - Listar quem um usuário segue\n"
-                            + "8 - Listar os seguidores de um usuário\n"
-                            + "9 - Voltar\n");
+                            + "1  - Criar\n"
+                            + "2  - Listar\n"
+                            + "3  - Deletar\n"
+                            + "4  - Buscar\n"
+                            + "5  - Seguir usuário\n"
+                            + "6  - Deixar de seguir usuário\n"
+                            + "7  - Listar quem um usuário segue\n"
+                            + "8  - Listar os seguidores de um usuário\n"
+                            + "9  - Trocar de plano\n"
+                            + "10 - Verificar plano\n"
+                            + "11 - Voltar\n");
 
                     switch (lerInt(sc, "Opcao: ")) {
                         case 1: {
@@ -359,7 +338,44 @@ class App {
                             }
                             break;
                         }
-                        case 9:
+                        case 9: {
+                            int id = lerInt(sc, "Digite o id do usuário: ");
+
+                            try {
+                                Usuario usuario = plataforma.buscarUsuario(id);
+                                String texto = "O plano atualmente é: " + usuario.getPlano().getNome()
+                                        + "\n\nDeseja alterar para:\n1-Individual\n2-Familia\n3-Gratuito\n";
+                                int valor = lerInt(sc, texto);
+
+                                if (valor == 1 && !(usuario.getPlano() instanceof PlanoIndividual)) {
+                                    PlanoIndividual plano = new PlanoIndividual(90);
+                                    usuario.assinar(plano);
+                                } else if (valor == 2 && !(usuario.getPlano() instanceof PlanoFamilia)) {
+                                    System.out.println("Digite a quantidade de membros:");
+
+                                    PlanoFamilia plano = new PlanoFamilia(120, sc.nextInt());
+                                    usuario.assinar(plano);
+                                } else if (valor == 3 && !(usuario.getPlano() instanceof PlanoGratuito)) {
+
+                                    PlanoGratuito plano = new PlanoGratuito();
+                                    usuario.assinar(plano);
+                                } else {
+                                    System.out.println("Você ja tem este plano!");
+                                }
+
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("Não foi possível assinar um plano");
+                            }
+
+                            break;
+                        }
+                        case 10:
+                            int id = lerInt(sc, "Digite o id do usuário: ");
+                            Usuario usuario = plataforma.buscarUsuario(id);
+
+                            System.out.println("O plano atualmente é: " + usuario.getPlano().getNome());
+                            break;
+                        case 11:
                             continue;
                         default:
                             System.out.println("Opção invalida");

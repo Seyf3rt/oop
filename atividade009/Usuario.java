@@ -6,9 +6,14 @@ class Usuario {
     private String nome;
     private String email;
     private static int contagem;
+    private Plano plano;
 
-    // Associação reflexiva "segue": os usuários que ESTE usuário segue (papel: seguindo).
-    // O papel inverso (seguidores) é derivado pela Plataforma percorrendo os cadastrados.
+
+
+    // Associação reflexiva "segue": os usuários que ESTE usuário segue (papel:
+    // seguindo).
+    // O papel inverso (seguidores) é derivado pela Plataforma percorrendo os
+    // cadastrados.
     private ArrayList<Usuario> seguindo = new ArrayList<>();
 
     public Usuario(String nome, String email) {
@@ -23,6 +28,8 @@ class Usuario {
             throw new IllegalArgumentException("E-mail inválido: \"" + email + "\" não contém @.");
         }
 
+
+        this.plano = new PlanoGratuito();
         this.nome = nome;
         this.email = email;
         contagem++;
@@ -45,6 +52,20 @@ class Usuario {
         return contagem;
     }
 
+    public boolean assinar (Plano novoPlano){
+        if (novoPlano == null){
+            throw new IllegalArgumentException("Plano invalido.");
+        } else {
+            this.plano = novoPlano;
+            return true;
+        }
+        
+    }
+
+    public Plano getPlano(){
+        return plano;
+    }
+
     // ------------------------------------------------------------------
     // Associação reflexiva: seguir / deixar de seguir
     // ------------------------------------------------------------------
@@ -52,7 +73,8 @@ class Usuario {
     /**
      * Passa a seguir outro usuário.
      *
-     * @throws IllegalArgumentException se outro for nulo ou for este próprio usuário
+     * @throws IllegalArgumentException se outro for nulo ou for este próprio
+     *                                  usuário
      * @throws IllegalStateException    se este usuário já segue outro
      */
     public void seguir(Usuario outro) {
@@ -91,7 +113,9 @@ class Usuario {
         return seguindo.contains(outro);
     }
 
-    /** Cópia da lista de quem este usuário segue (a lista interna não sai daqui). */
+    /**
+     * Cópia da lista de quem este usuário segue (a lista interna não sai daqui).
+     */
     public ArrayList<Usuario> getSeguindo() {
         return new ArrayList<>(seguindo);
     }

@@ -19,6 +19,10 @@ abstract class Conteudo {
         return contagem;
     }
 
+    public static void setContagem(int n_contagem) {
+        contagem = n_contagem;
+    }
+
     public int getId() {
         return id;
     }
@@ -60,9 +64,9 @@ abstract class Conteudo {
         return String.format("%02d:%02d", minutos, segundos);
     }
 
-    public void reproduzir() {
+    public final void reproduzir() {    
         reproducoes++;
-        System.out.println("Reproduzindo: " + toString() + " | reproduções: " + reproducoes);
+        System.out.println("Reproduzindo: " + toString() + " | reproduções: " + reproducoes + " | "+getCredito());
     }
 
     @Override

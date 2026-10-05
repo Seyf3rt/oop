@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sonora - diagrama de classes</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff;
+         font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #000; }
+  #canvas { position: relative; width: 2930px; height: 3020px; background: #fff; }
+
+  .titulo { position: absolute; left: 40px; top: 34px; }
+  .titulo h1 { margin: 0; font-size: 34px; font-weight: 700; }
+  .titulo p  { margin: 6px 0 0; font-size: 20px; color: #333; }
+
+  .box { position: absolute; border: 2px solid #000; background: #fff; }
+  .box .nome { text-align: center; font-size: 25px; font-weight: 700; padding: 10px 12px; }
+  .box .nome .estereotipo { display: block; font-size: 18px; font-weight: 400; font-style: normal; }
+  .box .sec { border-top: 2px solid #000; padding: 8px 14px; }
+  .box .sec div { font-size: 20px; line-height: 27px; padding-left: 18px; text-indent: -18px; }
+
+  .abs { font-style: italic; }
+  .est { text-decoration: underline; }
+
+  .nota { position: absolute; border: 2px solid #000; background: #f4f4f4; padding: 18px 22px; }
+  .nota h2 { margin: 0 0 12px; font-size: 23px; }
+  .nota p  { margin: 0 0 9px; font-size: 19px; line-height: 26px; }
+  .nota table { border-collapse: collapse; font-size: 19px; line-height: 26px; }
+  .nota td { padding: 1px 0; vertical-align: top; }
+  .nota td:first-child { padding-right: 24px; white-space: nowrap; }
+
+  svg#fios { position: absolute; left: 0; top: 0; pointer-events: none; }
+  svg#fios line, svg#fios polyline, svg#fios path { stroke: #000; stroke-width: 2; fill: none; }
+  svg#fios polygon.tri { fill: #fff; stroke: #000; stroke-width: 2; }
+  svg#fios text { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; font-size: 20px; fill: #000; }
+  svg#fios text.verbo { font-style: italic; }
+</style>
+</head>
+<body>
+<div id="canvas">
+  <div class="titulo">
+    <h1>Sonora &middot; Fase 09 &mdash; generalizacao, classes abstratas e final</h1>
+    <p>classe abstrata e metodo abstrato em <i>italico</i> &middot; membro <u>static</u> sublinhado &middot; {leaf} = final &middot; papel &middot; nome com direcao &middot; multiplicidade &middot; navegabilidade</p>
+  </div>
+  <svg id="fios"></svg>
+</div>
+
+<script>
+const A = (t, o = {}) => Object.assign({ t }, o);   // atributo/operacao simples
+
+const CLASSES = {
+  plataforma: {
+    x: 40, y: 190, w: 620, nome: 'Plataforma',
+    attrs: [
+      A('- musicas: ArrayList&lt;Musica&gt;'),
+      A('- podcasts: ArrayList&lt;Podcast&gt;'),
+      A('- usuarios: ArrayList&lt;Usuario&gt;'),
+      A('- playlists: ArrayList&lt;Playlist&gt;')
+    ],
+    ops: [
+      A('+ cadastrarMusica(musica: Musica): boolean'),
+      A('+ getTotalMusicas(): int'),
+      A('+ getTodasMusicas(): String'),
+      A('+ buscarMusica(id: int): Musica'),
+      A('+ buscarMusica(titulo: String): Musica'),
+      A('+ excluirMusica(idMusica: int): boolean'),
+      A('+ cadastrarPodcast(podcast: Podcast): boolean'),
+      A('+ getTodosPodcasts(): String'),
+      A('+ buscarPodcast(id: int): Podcast'),
+      A('+ excluirPodcast(idPodcast: int): boolean'),
+      A('+ cadastrarUsuario(usuario: Usuario): boolean'),
+      A('+ getTotalUsuarios(): int'),
+      A('+ buscarUsuario(id: int): Usuario'),
+      A('+ getInfoUsuarios(): String'),
+      A('+ getInfoUsuario(id: int): String'),
+      A('+ excluirUsuario(id: int): boolean'),
+      A('+ seguirUsuario(idSeguidor: int, idSeguido: int): void'),
+      A('+ deixarDeSeguirUsuario(idSeguidor: int, idSeguido: int): void'),
+      A('+ getSeguindo(id: int): String'),
+      A('+ getSeguidores(id: int): String'),
+      A('+ cadastrarPlaylist(nome: String, idDono: int): boolean'),
+      A('+ getTotalPlaylists(): int'),
+      A('+ buscarPlaylist(id: int): Playlist'),
+      A('+ getInfoPlaylist(id: int): String'),
+      A('+ getTodasPlaylists(): String'),
+      A('+ getTodasMusicasPlaylist(idPlaylist: int): String'),
+      A('+ addMusicaPlaylist(idPlaylist: int, idMusica: int): boolean'),
+      A('+ excluirMusicaPlaylist(idPlaylist: int, idMusica: int): boolean'),
+      A('+ excluirPlaylist(idPlaylist: int): boolean'),
+      A('+ getMusicaPlaylist(idPlaylist: int, posicao: int): Musica'),
+      A('+ tocarPlaylist(id: int): void'),
+      A('- exigirUsuario(id: int): Usuario'),
+      A('- exigirPlaylist(id: int): Playlist')
+    ]
+  },
+
+  conteudo: {
+    x: 980, y: 190, w: 600, nome: 'Conteudo', abstrata: true,
+    attrs: [
+      A('- contagem: int', { est: true }),
+      A('- id: int'),
+      A('- titulo: String'),
+      A('- duracaoSegundos: int'),
+      A('- reproducoes: int')
+    ],
+    ops: [
+      A('+ Conteudo(titulo: String, duracaoSegundos: int)'),
+      A('+ getContagem(): int', { est: true }),
+      A('+ setContagem(n_contagem: int): void', { est: true }),
+      A('+ getId(): int'),
+      A('# setId(id: int): void'),
+      A('+ getTitulo(): String'),
+      A('+ setTitulo(titulo: String): void'),
+      A('+ getDuracaoSegundos(): int'),
+      A('+ setDuracaoSegundos(duracaoSegundos: int): void'),
+      A('+ getReproducoes(): int'),
+      A('+ getDuracaoFormatada(): String'),
+      A('+ getCredito(): String', { abs: true }),
+      A('+ reproduzir(): void  {leaf}'),
+      A('+ toString(): String')
+    ]
+  },
+
+  musica: {
+    x: 760, y: 940, w: 480, nome: 'Musica',
+    attrs: [A('- artista: String'), A('- album: String')],
+    ops: [
+      A('+ Musica(titulo: String, duracaoSegundos: int, artista: String, album: String)'),
+      A('+ getCredito(): String'),
+      A('+ getArtista(): String'),
+      A('+ setArtista(artista: String): void'),
+      A('+ getAlbum(): String'),
+      A('+ setAlbum(album: String): void'),
+      A('+ toString(): String')
+    ]
+  },
+
+  podcast: {
+    x: 1330, y: 940, w: 500, nome: 'Podcast',
+    attrs: [A('- apresentador: String'), A('- numeroEpisodio: int')],
+    ops: [
+      A('+ Podcast(titulo: String, duracaoSegundos: int, apresentador: String, numeroEpisodio: int)'),
+      A('+ getCredito(): String'),
+      A('+ getApresentador(): String'),
+      A('+ setApresentador(apresentador: String): void'),
+      A('+ getNumeroEpisodio(): int'),
+      A('+ setNumeroEpisodio(numeroEpisodio: int): void'),
+      A('+ toString(): String')
+    ]
+  },
+
+  playlist: {
+    x: 640, y: 1440, w: 460, nome: 'Playlist',
+    attrs: [
+      A('- contagem: int', { est: true }),
+      A('- id: int'),
+      A('- titulo: String'),
+      A('- dono: Usuario'),
+      A('- musicas: ArrayList&lt;Musica&gt;')
+    ],
+    ops: [
+      A('+ Playlist(titulo: String, dono: Usuario)'),
+      A('+ getId(): int'),
+      A('+ getTitulo(): String'),
+      A('+ getDono(): Usuario'),
+      A('+ getQuantidade(): int'),
+      A('+ adicionar(musica: Musica): boolean'),
+      A('+ getNaPosicao(indice: int): Musica'),
+      A('+ removerNaPosicao(indice: int): boolean'),
+      A('+ posicaoDe(idMusica: int): int'),
+      A('+ getDuracaoSegundos(): int'),
+      A('+ getDuracaoFormatada(): String'),
+      A('+ getTodasMusicas(): String'),
+      A('+ reproduzirTudo(): void'),
+      A('+ informacoes(): String'),
+      A('+ getContagem(): int', { est: true })
+    ]
+  },
+
+  usuario: {
+    x: 1300, y: 1440, w: 500, nome: 'Usuario',
+    attrs: [
+      A('- contagem: int', { est: true }),
+      A('- id: int'),
+      A('- nome: String'),
+      A('- email: String'),
+      A('- plano: Plano'),
+      A('- seguindo: ArrayList&lt;Usuario&gt;')
+    ],
+    ops: [
+      A('+ Usuario(nome: String, email: String)'),
+      A('+ getId(): int'),
+      A('+ getNome(): String'),
+      A('+ getEmail(): String'),
+      A('+ assinar(novoPlano: Plano): boolean'),
+      A('+ getPlano(): Plano'),
+      A('+ seguir(outro: Usuario): void'),
+      A('+ deixarDeSeguir(outro: Usuario): void'),
+      A('+ getQuantidadeSeguindo(): int'),
+      A('+ segue(outro: Usuario): boolean'),
+      A('+ getSeguindo(): ArrayList&lt;Usuario&gt;'),
+      A('+ informacoes(): String'),
+      A('+ getContagem(): int', { est: true })
+    ]
+  },
+
+  plano: {
+    x: 2010, y: 1440, w: 540, nome: 'Plano', abstrata: true,
+    attrs: [A('- nome: String'), A('- maxDispositivos: int')],
+    ops: [
+      A('+ getNome(): String'),
+      A('+ setNome(nome: String): void'),
+      A('+ getMaxDispositivos(): int'),
+      A('+ setMaxDispositivos(dispositivos: int): void'),
+      A('+ calcularMensalidade(): double', { abs: true }),
+      A('+ temAnuncios(): boolean', { abs: true }),
+      A('+ resumo(): String  {leaf}')
+    ]
+  },
+
+  planopago: {
+    x: 1890, y: 1990, w: 470, nome: 'PlanoPago', abstrata: true,
+    attrs: [A('- precoMensal: double')],
+    ops: [
+      A('+ getPrecoMensal(): double'),
+      A('+ setPrecoMensal(precoMensal: double): void'),
+      A('+ temAnuncios(): boolean')
+    ]
+  },
+
+  planogratuito: {
+    x: 2430, y: 1990, w: 440, nome: 'PlanoGratuito  {leaf}',
+    attrs: [],
+    ops: [
+      A('+ PlanoGratuito()'),
+      A('+ temAnuncios(): boolean  {leaf}'),
+      A('+ calcularMensalidade(): double')
+    ]
+  },
+
+  planoindividual: {
+    x: 1790, y: 2460, w: 460, nome: 'PlanoIndividual',
+    attrs: [],
+    ops: [
+      A('+ PlanoIndividual(precoMensal: double)'),
+      A('+ calcularMensalidade(): double')
+    ]
+  },
+
+  planofamilia: {
+    x: 2300, y: 2460, w: 570, nome: 'PlanoFamilia',
+    attrs: [A('- quantidadeMembros: int')],
+    ops: [
+      A('+ PlanoFamilia(precoMensal: double, quantidadeMembros: int)'),
+      A('+ getQuantidadeMembros(): int'),
+      A('+ setQuantidadeMembros(quantidadeMembros: int): void'),
+      A('+ calcularMensalidade(): double')
+    ]
+  }
+};
+
+// ---------- desenha as caixas ----------
+const canvas = document.getElementById('canvas');
+const linha = m => `<div class="${m.abs ? 'abs' : ''}${m.est ? ' est' : ''}">${m.t}</div>`;
+
+for (const [id, c] of Object.entries(CLASSES)) {
+  const el = document.createElement('div');
+  el.className = 'box';
+  el.id = id;
+  el.style.left = c.x + 'px';
+  el.style.top = c.y + 'px';
+  el.style.width = c.w + 'px';
+  el.innerHTML =
+    `<div class="nome${c.abstrata ? ' abs' : ''}">` +
+      (c.abstrata ? '<span class="estereotipo">&laquo;abstract&raquo;</span>' : '') +
+      c.nome +
+    `</div>` +
+    (c.attrs.length ? `<div class="sec">${c.attrs.map(linha).join('')}</div>` : '') +
+    `<div class="sec">${c.ops.map(linha).join('')}</div>`;
+  canvas.appendChild(el);
+}
+
+// ---------- notas ----------
+function nota(x, y, w, html) {
+  const el = document.createElement('div');
+  el.className = 'nota';
+  el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px';
+  el.innerHTML = html;
+  canvas.appendChild(el);
+}
+
+nota(40, 1560, 560, `
+  <h2>Por que estas multiplicidades</h2>
+  <p><b>assina:</b> todo Usuario tem exatamente 1 Plano - ele nasce no PlanoGratuito e
+     assinar() recusa nulo, entao nunca fica sem. Cada Plano criado no menu pertence a um
+     unico usuario (1), e so o Usuario conhece o Plano: a navegabilidade e de mao unica.</p>
+  <p><b>cadastra / registra / hospeda:</b> a plataforma e uma so (1) e cada acervo pode
+     estar vazio ou ter quantos itens forem cadastrados (0..*).</p>
+  <p><b>contem:</b> uma playlist pode estar vazia e a mesma musica pode aparecer em varias
+     playlists, entao 0..* nas duas pontas.</p>
+  <p><b>cria:</b> toda playlist tem exatamente 1 dono (o construtor recusa dono nulo) e um
+     usuario pode ter 0..* playlists.</p>
+  <p><b>segue:</b> quem entra na plataforma nao segue ninguem e nao ha teto para quantos
+     segue ou por quantos e seguido (0..* / 0..*).</p>
+  <p><b>Heranca nao leva multiplicidade:</b> ela nao liga objetos, diz que todo PlanoPago
+     e um Plano e que toda Musica e um Conteudo.</p>
+`);
+
+nota(40, 2220, 560, `
+  <h2>Como ler o diagrama</h2>
+  <table>
+    <tr><td><i>Nome em italico</i></td><td>classe ou metodo <b>abstrato</b>: Conteudo, Plano e
+        PlanoPago nao podem ser instanciados</td></tr>
+    <tr><td>{leaf}</td><td><b>final</b>: metodo que nao pode ser sobrescrito (reproduzir, resumo)
+        ou classe que nao pode ser estendida (PlanoGratuito)</td></tr>
+    <tr><td><u>sublinhado</u></td><td>membro static (um so para toda a classe)</td></tr>
+    <tr><td>#</td><td>protected: visivel na propria classe e nas subclasses</td></tr>
+    <tr><td>- papel</td><td>nome do lado da associacao (ex.: - plano)</td></tr>
+    <tr><td>nome &#9658;</td><td>verbo e direcao de leitura (ex.: Usuario assina &#9658; Plano)</td></tr>
+    <tr><td>0..* / 1</td><td>multiplicidade em cada ponta</td></tr>
+    <tr><td>&mdash;&mdash;&gt;</td><td>navegabilidade: a seta aberta marca o unico lado navegavel</td></tr>
+    <tr><td>&mdash;&mdash;&#9655;</td><td>especializacao (heranca): o triangulo vazado fica na superclasse</td></tr>
+  </table>
+  <p style="margin-top:14px">Depois da generalizacao, nome e maxDispositivos moram em Plano,
+     precoMensal mora em PlanoPago e cada subclasse guarda apenas o que e dela. resumo() e
+     escrito uma unica vez em Plano e chama calcularMensalidade(), que cada plano concreto
+     implementa a sua maneira.</p>
+`);
+
+// ---------- fios ----------
+const svg = document.getElementById('fios');
+svg.setAttribute('width', canvas.offsetWidth);
+svg.setAttribute('height', canvas.offsetHeight);
+const NS = 'http://www.w3.org/2000/svg';
+
+const R = id => {
+  const e = document.getElementById(id);
+  return { x: e.offsetLeft, y: e.offsetTop, w: e.offsetWidth, h: e.offsetHeight,
+           cx: e.offsetLeft + e.offsetWidth / 2, cy: e.offsetTop + e.offsetHeight / 2,
+           dir: e.offsetLeft + e.offsetWidth, baixo: e.offsetTop + e.offsetHeight };
+};
+const add = (tag, attrs, texto) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (texto !== undefined) n.textContent = texto;
+  svg.appendChild(n);
+  return n;
+};
+const poli = pts => add('polyline', { points: pts.map(p => p.join(',')).join(' ') });
+const txt = (x, y, t, anchor = 'start', cls = '') =>
+  add('text', { x, y, 'text-anchor': anchor, class: cls }, t);
+
+// seta aberta (navegabilidade) apontando para 'lado'
+function seta(x, y, lado) {
+  const d = 15;
+  if (lado === 'dir')    poli([[x - d, y - d], [x, y], [x - d, y + d]]);
+  if (lado === 'esq')    poli([[x + d, y - d], [x, y], [x + d, y + d]]);
+  if (lado === 'baixo')  poli([[x - d, y - d], [x, y], [x + d, y - d]]);
+  if (lado === 'cima')   poli([[x - d, y + d], [x, y], [x + d, y + d]]);
+}
+
+// heranca: triangulo vazado embaixo da superclasse + barramento ate as subclasses
+function heranca(paiId, filhosIds, barraY) {
+  const p = R(paiId);
+  const h = 20;
+  add('polygon', { class: 'tri',
+    points: `${p.cx},${p.baixo} ${p.cx - 16},${p.baixo + h} ${p.cx + 16},${p.baixo + h}` });
+  poli([[p.cx, p.baixo + h], [p.cx, barraY]]);
+  const cxs = filhosIds.map(id => R(id).cx);
+  poli([[Math.min(...cxs), barraY], [Math.max(...cxs), barraY]]);
+  filhosIds.forEach(id => { const f = R(id); poli([[f.cx, barraY], [f.cx, f.y]]); });
+  txt(p.cx + 22, p.baixo + 34, 'e um(a)', 'start', 'verbo');
+}
+
+heranca('conteudo', ['musica', 'podcast'], R('musica').y - 90);
+heranca('plano', ['planopago', 'planogratuito'], R('planopago').y - 110);
+heranca('planopago', ['planoindividual', 'planofamilia'], R('planoindividual').y - 110);
+
+// Plataforma 1 --- 0..* Musica   (cadastra)
+(() => {
+  const p = R('plataforma'), m = R('musica'), y = 1090;
+  poli([[p.dir, y], [m.x, y]]);
+  seta(m.x, y, 'dir');
+  txt(p.dir + 8, y - 16, '1');
+  txt(m.x - 8, y - 16, '0..*', 'end');
+  txt(m.x - 8, y + 34, '- acervo', 'end');
+  txt((p.dir + m.x) / 2, y - 48, 'cadastra ▶', 'middle', 'verbo');
+})();
+
+// Plataforma 1 --- 0..* Podcast   (cadastra, por cima)
+(() => {
+  const p = R('plataforma'), d = R('podcast'), topo = 140, corredor = 1900, y = 1080;
+  poli([[p.cx, p.y], [p.cx, topo], [corredor, topo], [corredor, y], [d.dir, y]]);
+  seta(d.dir, y, 'esq');
+  txt(p.cx + 10, p.y - 14, '1');
+  txt(d.dir + 14, y - 16, '0..*');
+  txt(d.dir + 14, y + 34, '- podcasts');
+  txt(corredor - 14, topo - 14, 'cadastra ▶', 'end', 'verbo');
+})();
+
+// Plataforma 1 --- 0..* Playlist  (hospeda)
+(() => {
+  const p = R('plataforma'), l = R('playlist'), y = 1480;
+  poli([[p.cx, p.baixo], [p.cx, y], [l.x, y]]);
+  seta(l.x, y, 'dir');
+  txt(p.cx + 10, p.baixo + 26, '1');
+  txt(l.x - 8, y - 16, '0..*', 'end');
+  txt(l.x - 8, y + 34, '- playlists', 'end');
+  txt(l.x - 150, y - 48, 'hospeda ▶', 'middle', 'verbo');
+})();
+
+// Plataforma 1 --- 0..* Usuario   (registra)
+(() => {
+  const p = R('plataforma'), u = R('usuario'), y = 1370, entra = u.x + 110;
+  poli([[p.dir, y], [entra, y], [entra, u.y]]);
+  seta(entra, u.y, 'baixo');
+  txt(p.dir + 8, y - 16, '1');
+  txt(entra + 14, u.y - 20, '0..*');
+  txt(entra + 14, y - 16, '- usuarios');
+  txt(p.dir + 120, y - 16, 'registra ▶', 'start', 'verbo');
+})();
+
+// Playlist 0..* --- 0..* Musica   (contem)
+(() => {
+  const l = R('playlist'), m = R('musica'), x = 1000;
+  poli([[x, l.y], [x, m.baixo]]);
+  seta(x, m.baixo, 'cima');
+  txt(x + 14, l.y - 16, '0..*');
+  txt(x + 14, m.baixo + 34, '0..*');
+  txt(x - 14, m.baixo + 34, '- faixas', 'end');
+  txt(x + 14, m.baixo + 62, 'contem ▲', 'start', 'verbo');
+})();
+
+// Playlist 0..* --- 1 Usuario   (cria)
+(() => {
+  const l = R('playlist'), u = R('usuario'), y = 1780;
+  poli([[l.dir, y], [u.x, y]]);
+  seta(u.x, y, 'dir');
+  txt(l.dir + 8, y - 16, '0..*');
+  txt(l.dir + 8, y + 34, '- playlists');
+  txt(u.x - 8, y - 16, '1', 'end');
+  txt(u.x - 8, y + 34, '- dono', 'end');
+  txt((l.dir + u.x) / 2, y - 48, '◀ cria', 'middle', 'verbo');
+})();
+
+// Usuario 1 --- 1 Plano   (assina)  <<< a associacao nova da Parte E
+(() => {
+  const u = R('usuario'), p = R('plano'), y = 1510;
+  poli([[u.dir, y], [p.x, y]]);
+  seta(p.x, y, 'dir');
+  txt(u.dir + 8, y - 16, '1');
+  txt(p.x - 8, y - 16, '1', 'end');
+  txt(p.x - 8, y + 34, '- plano', 'end');
+  txt((u.dir + p.x) / 2, y - 48, 'assina ▶', 'middle', 'verbo');
+})();
+
+// Usuario 0..* --- 0..* Usuario   (segue, reflexiva)
+(() => {
+  const u = R('usuario'), y = u.baixo + 110, a = u.x + 120, b = u.dir - 120;
+  poli([[a, u.baixo], [a, y], [b, y], [b, u.baixo]]);
+  seta(b, u.baixo, 'cima');
+  txt(a - 14, u.baixo + 30, '0..*', 'end');
+  txt(a - 14, u.baixo + 58, '- seguindo', 'end');
+  txt(b + 14, u.baixo + 30, '0..*');
+  txt(b + 14, u.baixo + 58, '- seguidores');
+  txt((a + b) / 2, y + 34, 'segue ▶', 'middle', 'verbo');
+})();
+</script>
+</body>
+</html>

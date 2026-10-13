@@ -1,6 +1,6 @@
 public interface Cobravel {
     public double calcularValorCobrar();
     default String gerarComprovante(){
-        return "Valor cobrado: R$ "+ calcularValorCobrar();
+        return "Valor a cobrar: R$ " + String.format("%.2f", calcularValorCobrar());
     }
 }

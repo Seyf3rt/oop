@@ -15,7 +15,7 @@ public class Pedido implements Cobravel{
         }
         this.cliente = cliente;
 
-        proximoNumero++;
+        numero = proximoNumero++;
     }
 
     public int getNumero() {
@@ -23,7 +23,7 @@ public class Pedido implements Cobravel{
     }
 
     public Cliente getCliente() {
-        return null;
+        return cliente;
     }
 
     public boolean isFinalizado() {
@@ -88,6 +88,9 @@ public class Pedido implements Cobravel{
     }
 
     public void finalizar() {
+        if (finalizado) {
+            throw new IllegalStateException("Pedido já foi finalizado");
+        }
         if (itens.isEmpty()){
             throw new IllegalStateException("Não há produtos selecionados.");
         }

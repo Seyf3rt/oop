@@ -13,7 +13,7 @@ public class Cliente {
             this.nome = nome;
         }
 
-        if (email.isEmpty()) {
+        if (email == null || email.isEmpty()) {
             throw new IllegalArgumentException("Email está vazio");
         } else if (!email.contains("@")) {
             throw new IllegalArgumentException("Email inválido");
@@ -25,7 +25,7 @@ public class Cliente {
     }
 
     public Cliente(String nome, String email, int idade, Cliente indicadoPor) {
-        super();
+        this(nome, email, idade);
         if (indicadoPor == null) {
             throw new IllegalArgumentException("Indicado por ninguem");
         } else {
@@ -82,25 +82,24 @@ public class Cliente {
 
     }
 
-    public void usarCashback(double valor) {
+    public void usarCashback(double valor) throws SaldoInsuficienteException {
         if (valor <= 0) {
             throw new IllegalArgumentException("Valor deve ser maior que 0!");
         } else if (valor > saldoCashback) {
-            throw new IllegalArgumentException(
-                    "Saldo insuficiente: disponível R$" + getSaldoCashback() + "\n Solicitado: R$" + valor);
-        } else {
-            saldoCashback -= valor;
+            throw new SaldoInsuficienteException(getSaldoCashback(), valor);
         }
+        saldoCashback -= valor;
+
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Cliente)){
+        if (!(obj instanceof Cliente)) {
             return false;
-        } 
+        }
         Cliente outro = (Cliente) obj;
 
-        if (outro.getEmail().equalsIgnoreCase(getEmail())){
+        if (outro.getEmail().equalsIgnoreCase(getEmail())) {
             return true;
         }
         return false;
@@ -108,7 +107,7 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return getNome()+" "+getEmail();
+        return getNome() + " " + getEmail();
     }
 
 }
